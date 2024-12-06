@@ -19,23 +19,17 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o fabric
 # Use scratch as final base image
 FROM alpine:latest
 
+# Add user
+RUN addgroup --gid 1000 user && adduser -D -u 1000 user -G user
+
 # Copy the binary from builder
 COPY --from=builder /app/fabric /fabric
 
-# Copy patterns directory
-COPY patterns /patterns
-
-# Ensure clean config directory and copy ENV file
-RUN rm -rf /root/.config/fabric && \
-    mkdir -p /root/.config/fabric
-COPY ENV /root/.config/fabric/.env
-
-# Add debug commands
-RUN ls -la /root/.config/fabric/
+USER user
 
 # Expose port 8080
 EXPOSE 8080
 
 # Run the binary with debug output
 ENTRYPOINT ["/fabric"]
-CMD ["--serve"] 
+CMD ["-h"] 
